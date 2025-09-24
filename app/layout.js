@@ -1,6 +1,7 @@
 import localFont from "next/font/local";
 import "./globals.css";
 import SessionProvider from "@/componnets/SessionProvider";
+import NavBar from "@/componnets/Navbar";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -22,7 +23,8 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body> 
-        <SessionProvider>      
+        <SessionProvider> 
+          <NavBar/>     
         {children}
         </SessionProvider>
 

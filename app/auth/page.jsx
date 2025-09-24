@@ -1,6 +1,6 @@
 import React from "react";
 
-import LoginMain from "../components/LoginMain";
+import LoginMain from "@/componnets/LoginMain";
 
 export const metadata = {
   title: "Time_Card - Login to your account",
