@@ -15,7 +15,7 @@ const NavBar = () => {
   const navItems = [
     { label: "Home", href: "/" },
     { label: "Help", href: "/Help" },
-    { label: "Contact Us", href: "/contact" },
+    { label: "vehicleDetails", href: "/details" },
   ];
 
   const toggleMobileMenu = (e) => {
