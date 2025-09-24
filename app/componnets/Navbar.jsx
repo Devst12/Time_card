@@ -61,9 +61,9 @@ const NavBar = () => {
         className="text-2xl font-bold text-white tracking-tight hover:scale-105 transition-all duration-300 hover:text-gray-300"
       >
         <span className="text-white bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
-          Stock
+          Time
         </span>
-        <span className="text-gray-400">Flow</span>
+        <span className="text-gray-400">Card</span>
       </Link>
 
       <button

@@ -1,6 +1,6 @@
 import "./globals.css";
-import SessionProvider from "@/componnets/SessionProvider";
-import NavBar from "@/componnets/Navbar";
+import SessionProvider from "@/app/componnets/SessionProvider";
+import NavBar from "@/app/componnets/Navbar";
 
 export const metadata = {
   title: "Time card  ",

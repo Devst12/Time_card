@@ -1,4 +1,4 @@
-import Landing from "@/componnets/landing/Landing";
+import Landing from "@/app/componnets/landing/Landing";
 
 export default function page(){
   return<Landing/>;

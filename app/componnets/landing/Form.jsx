@@ -108,7 +108,7 @@ function DriverForm() {
 
         <form onSubmit={handlePreview} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {renderInputField("fullName", "Full Name", "e.g., John Doe", User)}
+            {renderInputField("fullName", "Full Name", "e.g., Mr.", User)}
             {renderInputField("drivingLicense", "Driving License No.", "e.g., NPL-1234567", Shield)}
             {renderInputField("roadPermit", "Road Permit No.", "e.g., RP-987654", MapPin)}
             {renderInputField("nationalId", "National ID No.", "e.g., 1122334455", Fingerprint)}
