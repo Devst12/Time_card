@@ -11,11 +11,29 @@ const NavBar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const mobileMenuRef = useRef(null);
   const toggleButtonRef = useRef(null);
+  const [vehicleId, setVehicleId] = useState(null);
+
+  useEffect(() => {
+    const fetchVehicle = async () => {
+      try {
+        const res = await fetch("/api/details");
+        if (!res.ok) return;
+        const vehicle = await res.json();
+        setVehicleId(vehicle.vehicleId);
+      } catch (err) {
+        console.error("Failed to fetch vehicleId:", err);
+      }
+    };
+    if (status === "authenticated") {
+      fetchVehicle();
+    }
+  }, [status]);
 
   const navItems = [
     { label: "Home", href: "/" },
+    { label: "Profile", href: vehicleId ? `/profile/${vehicleId}` : "/profile" },
+    { label: "vehicleDetails", href: vehicleId ? `/details/${vehicleId}` : "/details" },
     { label: "Help", href: "/Help" },
-    { label: "vehicleDetails", href: "/details" },
   ];
 
   const toggleMobileMenu = (e) => {
@@ -24,7 +42,6 @@ const NavBar = () => {
     setIsMobileMenuOpen((prev) => !prev);
   };
 
-  // Handle outside clicks to close the mobile menu
   useEffect(() => {
     const handleOutsideClick = (event) => {
       if (
@@ -36,7 +53,6 @@ const NavBar = () => {
         setIsMobileMenuOpen(false);
       }
     };
-
     if (isMobileMenuOpen) {
       document.addEventListener("mousedown", handleOutsideClick);
     }
@@ -45,7 +61,6 @@ const NavBar = () => {
     };
   }, [isMobileMenuOpen]);
 
-  // Close mobile menu on route change
   useEffect(() => {
     setIsMobileMenuOpen(false);
   }, [pathname]);

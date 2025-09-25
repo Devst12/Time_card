@@ -1,8 +1,6 @@
 "use client"
-
 import { useState, useEffect } from "react"
 import { useParams, useRouter } from "next/navigation"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -32,18 +30,10 @@ export default function ProfilePage() {
         const result = await response.json()
         setProfile(result.data)
       } else {
-        toast({
-          title: "Error",
-          description: "Failed to load profile",
-          variant: "destructive",
-        })
+        toast({ title: "Error", description: "Failed to load profile", variant: "destructive" })
       }
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to load profile",
-        variant: "destructive",
-      })
+    } catch {
+      toast({ title: "Error", description: "Failed to load profile", variant: "destructive" })
     } finally {
       setLoading(false)
     }
@@ -61,11 +51,7 @@ export default function ProfilePage() {
 
   const saveField = async (field) => {
     if (!editValue.trim()) {
-      toast({
-        title: "Error",
-        description: "Field cannot be empty",
-        variant: "destructive",
-      })
+      toast({ title: "Error", description: "Field cannot be empty", variant: "destructive" })
       return
     }
 
@@ -81,9 +67,7 @@ export default function ProfilePage() {
 
       const response = await fetch(`/api/profile/${params.id}`, {
         method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(updateData),
       })
 
@@ -92,23 +76,12 @@ export default function ProfilePage() {
         setProfile(updatedResult.data)
         setEditingField(null)
         setEditValue("")
-        toast({
-          title: "Updated",
-          description: "Profile updated successfully",
-        })
+        toast({ title: "Updated", description: "Profile updated successfully" })
       } else {
-        toast({
-          title: "Error",
-          description: "Failed to update profile",
-          variant: "destructive",
-        })
+        toast({ title: "Error", description: "Failed to update profile", variant: "destructive" })
       }
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to update profile",
-        variant: "destructive",
-      })
+    } catch {
+      toast({ title: "Error", description: "Failed to update profile", variant: "destructive" })
     } finally {
       setUpdating(false)
     }
@@ -119,11 +92,11 @@ export default function ProfilePage() {
     const canEdit = isEditable && !["user.gmail", "user.username", "vehicleId"].includes(field)
 
     return (
-      <div className="flex items-center justify-between py-3 border-b border-gray-100 last:border-0">
+      <div className="flex items-center justify-between py-4 border-b last:border-none">
         <div className="flex items-center gap-3">
           <div className="text-gray-400">{icon}</div>
           <div>
-            <Label className="text-sm font-medium text-gray-700">{label}</Label>
+            <Label className="text-sm font-semibold text-gray-700">{label}</Label>
             {!isEditing && (
               <div className="text-sm text-gray-900 mt-1">
                 {field === "user.status" ? (
@@ -158,7 +131,6 @@ export default function ProfilePage() {
                   value={editValue}
                   onChange={(e) => setEditValue(e.target.value)}
                   className="w-48"
-                  placeholder={`Enter ${label.toLowerCase()}`}
                 />
               )}
               <Button size="sm" onClick={() => saveField(field)} disabled={updating}>
@@ -170,13 +142,14 @@ export default function ProfilePage() {
             </>
           ) : (
             <>
-              {canEdit && (
+              {canEdit ? (
                 <Button size="sm" variant="ghost" onClick={() => startEdit(field, value)}>
                   <Edit3 className="h-4 w-4" />
                 </Button>
-              )}
-              {!canEdit && (
-                <div className="text-gray-400 text-xs px-2">{field === "vehicleId" ? "Auto-generated" : "Fixed"}</div>
+              ) : (
+                <span className="text-gray-400 text-xs">
+                  {field === "vehicleId" ? "Auto-generated" : "Fixed"}
+                </span>
               )}
             </>
           )}
@@ -187,7 +160,7 @@ export default function ProfilePage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
           <p className="text-gray-600">Loading profile...</p>
@@ -198,95 +171,48 @@ export default function ProfilePage() {
 
   if (!profile) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <Card className="w-full max-w-md">
-          <CardContent className="p-6 text-center">
-            <p className="text-gray-600 mb-4">Profile not found</p>
-            <Button onClick={() => router.push("/")} className="flex items-center gap-2">
-              <ArrowLeft className="h-4 w-4" />
-              Go Back
-            </Button>
-          </CardContent>
-        </Card>
+      <div className="min-h-screen flex items-center justify-center flex-col gap-4">
+        <p className="text-gray-600">Profile not found</p>
+        <Button onClick={() => router.push("/")} className="flex items-center gap-2">
+          <ArrowLeft className="h-4 w-4" /> Go Back
+        </Button>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="bg-white border-b">
-        <div className="max-w-4xl mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Button variant="ghost" onClick={() => router.push("/")} className="flex items-center gap-2">
-                <ArrowLeft className="h-4 w-4" />
-                Back
-              </Button>
-              <div>
-                <h1 className="text-xl font-semibold text-gray-900">Driver Profile</h1>
-                <p className="text-sm text-gray-500">{profile.user?.gmail}</p>
-              </div>
+    <div className="min-h-screen">
+      <div className="border-b bg-gray-50">
+        <div className="max-w-4xl mx-auto px-6 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <Button variant="ghost" onClick={() => router.push("/")} className="flex items-center gap-2">
+              <ArrowLeft className="h-4 w-4" /> Back
+            </Button>
+            <div>
+              <h1 className="text-xl font-bold text-gray-900">Driver Profile</h1>
+              <p className="text-sm text-gray-500">{profile.user?.gmail}</p>
             </div>
-            <Badge variant={profile.user?.status === "enabled" ? "default" : "secondary"}>
-              {profile.user?.status || "disabled"}
-            </Badge>
           </div>
+          <Badge variant={profile.user?.status === "enabled" ? "default" : "secondary"}>
+            {profile.user?.status || "disabled"}
+          </Badge>
         </div>
       </div>
 
       <div className="max-w-4xl mx-auto px-6 py-8">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <User className="h-5 w-5" />
-              Profile Information
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-6">
-            <div className="space-y-1">
-              {/* Personal Information */}
-              {renderField("Full Name", "fullName", profile.fullName, <User className="h-4 w-4" />)}
-              {renderField("Gender", "gender", profile.gender, <User className="h-4 w-4" />, "select")}
-              {renderField(
-                "Contact Number",
-                "contactNumber",
-                profile.contactNumber,
-                <Phone className="h-4 w-4" />,
-                "tel",
-              )}
-              {renderField("National ID", "nationalId", profile.nationalId, <CreditCard className="h-4 w-4" />)}
-
-              {/* Vehicle Information */}
-              {renderField("Vehicle ID", "vehicleId", profile.vehicleId, <Car className="h-4 w-4" />, "text", false)}
-              {renderField("Vehicle Number", "vehicleNumber", profile.vehicleNumber, <Car className="h-4 w-4" />)}
-              {renderField(
-                "Driving License",
-                "drivingLicense",
-                profile.drivingLicense,
-                <CreditCard className="h-4 w-4" />,
-              )}
-              {renderField("Road Permit", "roadPermit", profile.roadPermit, <FileText className="h-4 w-4" />)}
-
-              {/* Account Information */}
-              {renderField("Email", "user.gmail", profile.user?.gmail, <Mail className="h-4 w-4" />, "email", false)}
-              {renderField(
-                "Username",
-                "user.username",
-                profile.user?.username,
-                <User className="h-4 w-4" />,
-                "text",
-                false,
-              )}
-              {renderField(
-                "Account Status",
-                "user.status",
-                profile.user?.status,
-                <User className="h-4 w-4" />,
-                "select",
-              )}
-            </div>
-          </CardContent>
-        </Card>
+        <div className="space-y-1">
+          {renderField("Full Name", "fullName", profile.fullName, <User className="h-4 w-4" />)}
+          {renderField("Gender", "gender", profile.gender, <User className="h-4 w-4" />, "select")}
+          {renderField("Contact Number", "contactNumber", profile.contactNumber, <Phone className="h-4 w-4" />, "tel")}
+          {renderField("National ID", "nationalId", profile.nationalId, <CreditCard className="h-4 w-4" />)}
+          {renderField("Vehicle ID", "vehicleId", profile.vehicleId, <Car className="h-4 w-4" />, "text", false)}
+          {renderField("Vehicle Number", "vehicleNumber", profile.vehicleNumber, <Car className="h-4 w-4" />)}
+          {renderField("Driving License", "drivingLicense", profile.drivingLicense, <CreditCard className="h-4 w-4" />)}
+          {renderField("Road Permit", "roadPermit", profile.roadPermit, <FileText className="h-4 w-4" />)}
+          {renderField("Email", "user.gmail", profile.user?.gmail, <Mail className="h-4 w-4" />, "email", false)}
+          {renderField("Username", "user.username", profile.user?.username, <User className="h-4 w-4" />, "text", false)}
+          {renderField("Account Status", "user.status", profile.user?.status, <User className="h-4 w-4" />, "select")}
+        </div>
       </div>
     </div>
   )
