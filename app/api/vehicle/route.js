@@ -1,59 +1,99 @@
-import dbConnect from "@/lib/mongoose";
-import Vehicle from "@/lib/modals/Vehicle";
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "../auth/[...nextauth]/route";
+import { connectDB } from "@/lib/mongoose"
+import Vehicle from "@/lib/modals/Vehicle"
+import { NextResponse } from "next/server"
+import { getServerSession } from "next-auth/next"
+import { authOptions } from "../auth/[...nextauth]/route"
 
-export async function POST(req) {
-  await dbConnect();
-
+export async function GET() {
   try {
-    const session = await getServerSession(authOptions);
+    await connectDB()
+    const vehicles = await Vehicle.find({}).sort({ createdAt: -1 })
+    return NextResponse.json({ success: true, data: vehicles })
+  } catch (error) {
+    console.error("Error fetching vehicles:", error)
+    return NextResponse.json({ success: false, error: "Failed to fetch vehicles" }, { status: 500 })
+  }
+}
+
+export async function POST(request) {
+  try {
+    await connectDB()
+
+    const session = await getServerSession(authOptions)
     if (!session || !session.user?.email) {
-      return new Response(JSON.stringify({ error: "Not authenticated" }), {
-        status: 401,
-      });
+      return NextResponse.json({ success: false, error: "Not authenticated" }, { status: 401 })
     }
 
-    const body = await req.json();
-    const gmail = session.user.email;
-    const username = session.user.name || gmail.split("@")[0];
+    const body = await request.json()
+    console.log("[v0] Received request body:", body)
 
-    let existing = await Vehicle.findOne({ "user.gmail": gmail });
+    const gmail = session.user.email
+    const username = session.user.name || gmail.split("@")[0]
+
+    if (!body.vehicleNumber) {
+      return NextResponse.json({ success: false, error: "Vehicle number is required" }, { status: 400 })
+    }
+
+    const existing = await Vehicle.findOne({ "user.gmail": gmail })
 
     if (existing) {
       existing.set({
-        ...body,                  // <-- update all form fields
+        ...body,
         user: {
           gmail,
           username,
-          status: "enabled",      // once they submit, status is enabled
+          status: "enabled", // Enable status when they submit
         },
-      });
-      await existing.save();
+        updatedAt: new Date(),
+      })
+      await existing.save()
 
-      return new Response(
-        JSON.stringify({ message: "Updated user with vehicle details", data: existing }),
-        { status: 200 }
-      );
+      console.log("[v0] Updated existing vehicle:", existing._id)
+
+      return NextResponse.json({
+        success: true,
+        data: existing,
+        message: "Updated user with vehicle details",
+      })
     } else {
-      const newVehicle = await Vehicle.create({
-        ...body, 
+      const vehicleId = body.vehicleNumber.replace(/\s+/g, "-").toLowerCase()
+
+      const vehicleData = {
+        vehicleId,
+        fullName: body.fullName,
+        drivingLicense: body.drivingLicense,
+        roadPermit: body.roadPermit,
+        nationalId: body.nationalId,
+        gender: body.gender,
+        contactNumber: body.contactNumber,
+        vehicleNumber: body.vehicleNumber,
         user: {
           gmail,
           username,
-          status: "disabled",
+          status: "enabled", // Changed status from "disabled" to "enabled" for new registrations
         },
-      });
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      }
 
-      return new Response(
-        JSON.stringify({ message: "Created new user vehicle details", data: newVehicle }),
-        { status: 201 }
-      );
+      console.log("[v0] Creating vehicle with data:", vehicleData)
+
+      const vehicle = new Vehicle(vehicleData)
+      const savedVehicle = await vehicle.save()
+
+      console.log("[v0] Vehicle saved successfully:", savedVehicle._id)
+
+      return NextResponse.json(
+        {
+          success: true,
+          data: savedVehicle,
+          message: "Created new user vehicle details",
+        },
+        { status: 201 },
+      )
     }
-  } catch (err) {
-    console.error("❌ Error in vehicle API:", err);
-    return new Response(JSON.stringify({ error: "Internal Server Error" }), {
-      status: 500,
-    });
+  } catch (error) {
+    console.error("❌ Error in vehicle API:", error)
+    return NextResponse.json({ success: false, error: error.message || "Failed to process vehicle" }, { status: 500 })
   }
 }

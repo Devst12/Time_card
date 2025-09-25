@@ -1,11 +1,11 @@
-"use client";
+"use client"
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { User, Shield, Car, Phone, Fingerprint, MapPin } from "lucide-react";
+import { useState } from "react"
+import { useRouter } from "next/navigation"
+import { User, Shield, Car, Phone, Fingerprint, MapPin } from "lucide-react"
 
 export default function DriverForm() {
-  const router = useRouter();
+  const router = useRouter()
 
   const [formData, setFormData] = useState({
     fullName: "",
@@ -15,61 +15,87 @@ export default function DriverForm() {
     gender: "",
     contactNumber: "",
     vehicleNumber: "",
-  });
+  })
 
-  const [errors, setErrors] = useState({});
-  const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState({})
+  const [loading, setLoading] = useState(false)
+  const [apiError, setApiError] = useState("")
+  const [successMessage, setSuccessMessage] = useState("")
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-    setErrors((prev) => ({ ...prev, [name]: null }));
-  };
+    const { name, value } = e.target
+    setFormData((prev) => ({ ...prev, [name]: value }))
+    setErrors((prev) => ({ ...prev, [name]: null }))
+    setApiError("")
+    setSuccessMessage("")
+  }
 
   const validateForm = () => {
-    const newErrors = {};
+    const newErrors = {}
     Object.keys(formData).forEach((key) => {
       if (!formData[key]) {
-        newErrors[key] = `${key} is required`;
+        newErrors[key] = `${key} is required`
       }
-    });
+    })
     if (formData.contactNumber && !/^\d{7,15}$/.test(formData.contactNumber)) {
-      newErrors.contactNumber = "Enter valid phone (7-15 digits).";
+      newErrors.contactNumber = "Enter valid phone (7-15 digits)."
     }
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
+  }
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!validateForm()) return;
-    setLoading(true);
+    e.preventDefault()
+
+    if (loading) return
+
+    if (!validateForm()) return
+    setLoading(true)
+    setApiError("")
+    setSuccessMessage("")
+
     try {
       const res = await fetch("/api/vehicle", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
-      });
-      if (res.ok) {
-        router.push("/");
+      })
+
+      const data = await res.json()
+
+      if (res.ok && data.success) {
+        setSuccessMessage("Driver registration successful!")
+        setFormData({
+          fullName: "",
+          drivingLicense: "",
+          roadPermit: "",
+          nationalId: "",
+          gender: "",
+          contactNumber: "",
+          vehicleNumber: "",
+        })
+        setTimeout(() => {
+          router.push("/")
+        }, 2000)
       } else {
-        alert("Submission failed.");
+        setApiError(data.error || "Submission failed.")
       }
     } catch (err) {
-      alert("Something went wrong.");
+      console.error("Submission error:", err)
+      setApiError("Something went wrong. Please try again.")
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   const renderInput = (id, label, placeholder, Icon, type = "text") => (
     <div>
-      <label htmlFor={id} className="block text-sm font-medium text-gray-700 mb-1">
+      <label htmlFor={id} className="block text-sm font-medium text-foreground mb-1">
         {label}
       </label>
       <div className="relative">
         <span className="absolute inset-y-0 left-0 flex items-center pl-3">
-          <Icon className="h-5 w-5 text-gray-400" />
+          <Icon className="h-5 w-5 text-muted-foreground" />
         </span>
         <input
           type={type}
@@ -79,20 +105,25 @@ export default function DriverForm() {
           onChange={handleChange}
           placeholder={placeholder}
           className={`w-full pl-10 pr-3 py-2 rounded-lg border ${
-            errors[id] ? "border-red-500" : "border-gray-300"
-          } focus:ring-indigo-500 focus:border-indigo-500 text-black`}
+            errors[id] ? "border-destructive" : "border-input"
+          } bg-background text-foreground focus:ring-2 focus:ring-ring focus:border-ring`}
         />
       </div>
-      {errors[id] && <p className="text-xs text-red-600 mt-1">{errors[id]}</p>}
+      {errors[id] && <p className="text-xs text-destructive mt-1">{errors[id]}</p>}
     </div>
-  );
+  )
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
-      <div className="w-full max-w-3xl bg-white shadow-md rounded-lg p-8">
-        <h1 className="text-2xl font-bold text-gray-800 mb-4">
-          Driver & Vehicle Form
-        </h1>
+    <div className="min-h-screen flex items-center justify-center bg-background p-4">
+      <div className="w-full max-w-3xl bg-card shadow-md rounded-lg p-8 border">
+        <h1 className="text-2xl font-bold text-foreground mb-4">Driver & Vehicle Registration</h1>
+
+        {successMessage && (
+          <div className="mb-4 p-3 bg-green-50 border border-green-200 text-green-800 rounded-lg">{successMessage}</div>
+        )}
+
+        {apiError && <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-800 rounded-lg">{apiError}</div>}
+
         <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {renderInput("fullName", "Full Name", "John Doe", User)}
           {renderInput("drivingLicense", "Driving License No.", "DL-123456", Shield)}
@@ -101,14 +132,14 @@ export default function DriverForm() {
           {renderInput("vehicleNumber", "Vehicle Number", "BA 2 PA 4567", Car)}
           {renderInput("contactNumber", "Contact Number", "98XXXXXXXX", Phone, "tel")}
           <div className="md:col-span-2">
-            <label className="block text-sm font-medium text-gray-700 mb-1">Gender</label>
+            <label className="block text-sm font-medium text-foreground mb-1">Gender</label>
             <select
               name="gender"
               value={formData.gender}
               onChange={handleChange}
               className={`w-full py-2 px-3 rounded-lg border ${
-                errors.gender ? "border-red-500" : "border-gray-300"
-              } focus:ring-indigo-500 focus:border-indigo-500 text-black`}
+                errors.gender ? "border-destructive" : "border-input"
+              } bg-background text-foreground focus:ring-2 focus:ring-ring focus:border-ring`}
             >
               <option value="" disabled>
                 Select Gender
@@ -117,21 +148,21 @@ export default function DriverForm() {
               <option value="Female">Female</option>
               <option value="Other">Other</option>
             </select>
-            {errors.gender && (
-              <p className="text-xs text-red-600 mt-1">{errors.gender}</p>
-            )}
+            {errors.gender && <p className="text-xs text-destructive mt-1">{errors.gender}</p>}
           </div>
           <div className="md:col-span-2">
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-indigo-600 text-white font-medium py-2 rounded-lg hover:bg-indigo-700 transition"
+              className={`w-full bg-primary text-primary-foreground font-medium py-2 rounded-lg hover:bg-primary/90 transition disabled:opacity-50 ${
+                loading ? "pointer-events-none" : ""
+              }`}
             >
-              {loading ? "Submitting..." : "Submit"}
+              {loading ? "Submitting..." : "Submit Registration"}
             </button>
           </div>
         </form>
       </div>
     </div>
-  );
+  )
 }
